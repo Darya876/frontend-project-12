@@ -1,6 +1,6 @@
 import ApiContext from '../contexts/ApiContext.jsx';
 
-const ChatApiProvider = ({ api, children }) => {
+const ApiProvider = ({ api, children }) => {
   return (
     <ApiContext.Provider value={api}>
       {children}
@@ -8,4 +8,4 @@ const ChatApiProvider = ({ api, children }) => {
   )
 };
 
-export default ChatApiProvider;
+export default ApiProvider;

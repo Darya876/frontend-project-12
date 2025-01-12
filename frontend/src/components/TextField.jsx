@@ -9,7 +9,6 @@ const TextField = (props, ref) => {
   return (
     <FormGroup className="mb-3">
       <FloatingLabel
-        controlId={name}
         label={placeholder}
         className="mb-3"
       >

@@ -9,7 +9,9 @@ const AuthProvider = ({ children }) => {
 
   const onAuth = async (values, type) => {
     try {
+      console.log(type);
       const response = await axios.post(`/api/v1/${type}`, values);
+      console.log(response);
       const authDat = response.data;
       const { status } = response;
       localStorage.setItem(
@@ -44,7 +46,10 @@ const AuthProvider = ({ children }) => {
     onSignup,
     onLogout,
   };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>);
 };
 
 export default AuthProvider;

@@ -14,14 +14,13 @@ export default {
     userInfo: {
       userNickname: 'Ваш ник',
     },
-    authErrors: {
+    errors: {
       unauthorized: 'Неверные имя пользователя или пароль',
-    },
-    signupErrors: {
       loginLength: 'От 3 до 20 символов',
       passwordLength: 'Не менее 6 символов',
       mustMatch: 'Пароли должны совпадать',
       required: 'Обязательное поле',
+      serverErrors: 'Неверные имя пользователя или пароль'
     },
   },
 };

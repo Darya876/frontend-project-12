@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 import { useRef, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { object, string, ref } from 'yup';
@@ -12,32 +12,31 @@ import AuthContext from '../contexts/AuthContext';
 import TextField from '../TextField.jsx';
 
 const SignupPage = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const useAuth = () => useContext(AuthContext);
   const { onSignup } = useAuth();
   const [authError, setAuthError] = useState();
 
-  const firstInput = useRef(null);
+  const inputRef = useRef(null);
   const validationSchema = object().shape({
     username: string()
-      .min(3, t('signupErrors.loginLength'))
-      .max(20, t('signupErrors.loginLength'))
-      .required(t('signupErrors.required')),
+      .min(3, i18next.t('errors.loginLength'))
+      .max(20, i18next.t('errors.loginLength'))
+      .required(i18next.t('errors.required')),
     password: string()
-      .min(6, t('signupErrors.passwordLength'))
-      .max(20, t('signupErrors.passwordLength'))
-      .required(t('signupErrors.required')),
+      .min(6, i18next.t('errors.passwordLength'))
+      .max(20, i18next.t('errors.passwordLength'))
+      .required(i18next.t('errors.required')),
     repeatPassword: string()
-      .required(t('signupErrors.required'))
-      .oneOf([ref('password'), null], t('signupErrors.mustMatch')),
+      .required(i18next.t('errors.required'))
+      .oneOf([ref('password'), null], i18next.t('errors.mustMatch')),
   });
 
   useEffect(() => {
-    firstInput.current.focus();
+    inputRef.current.focus();
   }, []);
 
-  const handleSubmit = async ({ ...values }) => { // возможно, нужно будет указать setAuthError = useState
+  const handleSubmit = async ({ ...values }) => {
     try {
       await onSignup(values);
       toast.success('Успешно!');
@@ -88,7 +87,7 @@ const SignupPage = () => {
                   <Form className="col-12 col-md-6 mt-3 mt-md-0" onSubmit={handleSubmit} noValidate>
                     <h1 className="text-center mb-4">Регистрация</h1>
                     <TextField
-                      ref={firstInput}
+                      ref={inputRef}
                       name="username"
                       placeholder='Имя пользователя'
                       error={authError || errors.username}

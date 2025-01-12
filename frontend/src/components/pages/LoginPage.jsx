@@ -1,5 +1,5 @@
+import i18next from 'i18next';
 import { useRef, useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { object, string } from 'yup';
 import { Formik, Form } from 'formik';
 import { toast } from 'react-toastify';
@@ -12,8 +12,6 @@ import AuthContext from '../contexts/AuthContext';
 import TextField from '../TextField.jsx';
 
 const LoginPage = () => {
-  const { t } = useTranslation();
-
   const navigate = useNavigate();
   const useAuth = () => useContext(AuthContext);
   const { onLogin } = useAuth();
@@ -24,8 +22,8 @@ const LoginPage = () => {
     firstInput.current.focus();
   }, []);
   const validationSchema = object({
-    username: string().required(t('validationErrors.isRequired')),
-    password: string().required(t('validationErrors.isRequired')),
+    username: string().required(i18next.t('errors.serverErrors')),
+    password: string().required(i18next.t('errors.serverErrors')),
   });
 
   const handleSubmit = async (values) => {
