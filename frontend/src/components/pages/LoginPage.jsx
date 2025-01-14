@@ -1,52 +1,50 @@
 import i18next from 'i18next';
-import { useRef, useContext, useEffect, useState } from 'react';
 import { object, string } from 'yup';
-import { Formik, Form } from 'formik';
-import { toast } from 'react-toastify';
-import {
-  Container, Col, Card, Row,
-} from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
+import { Formik, ErrorMessage } from 'formik';
+import { Container, Col, Card, Row } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/index.jsx';
 import loginImage from '../../assets/login.jpg';
-import AuthContext from '../contexts/AuthContext';
-import TextField from '../TextField.jsx';
+import routes from '../../routes.js'
 
 const LoginPage = () => {
+  const auth = useAuth();
   const navigate = useNavigate();
-  const useAuth = () => useContext(AuthContext);
-  const { onLogin } = useAuth();
-  const [authError, setAuthError] = useState();
+  const inputRef = useRef();
 
-  const firstInput = useRef();
-  useEffect(() => {
-    firstInput.current.focus();
-  }, []);
   const validationSchema = object({
     username: string().required(i18next.t('errors.serverErrors')),
     password: string().required(i18next.t('errors.serverErrors')),
   });
 
-  const handleSubmit = async (values) => {
+  const onSubmit = async (values, { setErrors }) => {
     try {
-      await onLogin(values);
-      toast.success('Успешно!');
-      navigate('/');
-    } catch (err) {
-      switch (err.message) {
-        case '401':
-          setAuthError('Неверные имя пользователя или пароль');
-          break;
-        case '500':
-          toast.error('Сервер не отвечает');
-          break;
-        case '0':
-          toast.error('Потеряно интернет соединение');
-          break;
-        default:
-          toast.error('Неизвестная ошибка');
+      const response = await axios.post(routes.apiLoginPath, {
+        username: values.username,
+        password: values.password,
+      });
+      const { data } = response;
+      auth.setUser(data);
+      navigate(routes.root);
+      console.log(response);
+    } catch (error) {
+      if (error.response) {
+        inputRef.current.select();
+        setErrors({
+          username: i18next.t('errors.serverError'),
+          password: i18next.t('errors.serverError'),
+        });
+        console.error(error.response.status);
+      } else if (error.request) {
+        console.error(error.request);
+      } else {
+        console.error('Error', error.message);
       }
     }
-  }
+  };
 
   return (
     <Container fluid className="h-100">
@@ -55,46 +53,76 @@ const LoginPage = () => {
           <Card className="shadow-sm">
             <Card.Body className="row p-5">
               <Col md={6} className="col-12 d-flex align-items-center justify-content-center">
-                <img className="rounded-circle" src={loginImage} alt="Войти" />
+                <img
+                  src={loginImage}
+                  className="rounded-circle"
+                  alt="Войти/Enter"
+                />
               </Col>
               <Formik
                 initialValues={{ username: '', password: '' }}
-                onSubmit={handleSubmit}
                 validationSchema={validationSchema}
-              >
+                onSubmit={onSubmit}>
                 {({
                   values,
-                  errors,
-                  touched,
-                  handleBlur,
                   handleChange,
+                  handleBlur,
                   handleSubmit,
-                  isSubmitting
+                  touched,
+                  errors,
                 }) => (
-                  <Form className="col-12 col-md-6 mt-3 mt-md-0" onSubmit={handleSubmit}>
+                  <Form
+                    onSubmit={handleSubmit}
+                    className="col-12 col-md-6 mt-3 mt-md-0"
+                  >
                     <h1 className="text-center mb-4">Войти</h1>
-                    <TextField
-                      ref={firstInput}
-                      name="username"
-                      placeholder='Имя пользователя'
-                      value={values.username}
-                      error={authError || errors.username}
-                      errorMessage={errors.username}
-                      touched={touched.username}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                    />
-                    <TextField
-                      name="password"
-                      placeholder='Пароль'
-                      value={values.password}
-                      error={authError || errors.password}
-                      errorMessage={authError || errors.password}
-                      touched={touched.password}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                    />
-                    <button className="w-100 mb-3 btn btn-outline-primary" type="submit" disabled={isSubmitting}>Войти</button>
+                    <Form.Group className="mb-3">
+                      <div className="form-floating mb-3">
+                        <Form.Control
+                          name="username"
+                          autoComplete="username"
+                          required
+                          placeholder={'Ваш ник'}
+                          id="username"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.username}
+                          isInvalid={touched.username && errors.username}
+                          autoFocus
+                          ref={inputRef}
+                        />
+                        <Form.Label htmlFor="username">Ваш ник</Form.Label>
+                      </div>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <div className="form-floating mb-3">
+                        <Form.Control
+                          name="password"
+                          type="password"
+                          autoComplete="password"
+                          placeholder={'Пароль'}
+                          required
+                          id="password"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.password}
+                          isInvalid={touched.password && errors.password}
+                        />
+                        <Form.Label htmlFor="password">Пароль</Form.Label>
+                        <ErrorMessage name="password">
+                          {(msg) => (
+                            <div className="invalid-tooltip">{msg}</div>
+                          )}
+                        </ErrorMessage>
+                      </div>
+                    </Form.Group>
+                    <Button
+                      type="submit"
+                      className="w-100 mb-3 btn btn-outline-primary"
+                      variant="outline-primary"
+                    >
+                      Войти
+                    </Button>
                   </Form>
                 )}
               </Formik>
@@ -102,14 +130,14 @@ const LoginPage = () => {
             <Card.Footer className="p-4">
               <div className="text-center">
                 <span>Нет аккаунта? </span>
-                <a href="/signup">Регистрация</a>
+                <Link to="/signup">Регистрация</Link>
               </div>
             </Card.Footer>
           </Card>
         </Col>
       </Row>
     </Container>
-  )
-}
+  );
+};
 
 export default LoginPage;

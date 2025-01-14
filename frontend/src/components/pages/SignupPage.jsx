@@ -1,65 +1,51 @@
 import i18next from 'i18next';
-import { useRef, useContext, useEffect, useState } from 'react';
+import { useRef } from 'react';
+import { Formik, ErrorMessage } from 'formik';
+import { Container, Col, Card, Row } from 'react-bootstrap';
+import * as Yup from 'yup';
+import { Button, Form } from 'react-bootstrap';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { object, string, ref } from 'yup';
-import { Formik, Form } from 'formik';
-import { toast } from 'react-toastify';
-import {
-  Container, Col, Card, Row,
-} from 'react-bootstrap';
+import useAuth from '../../hooks/index.jsx';
 import signupImage from '../../assets/signup.jpg';
-import AuthContext from '../contexts/AuthContext';
-import TextField from '../TextField.jsx';
+import routes from '../../routes.js';
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const useAuth = () => useContext(AuthContext);
-  const { onSignup } = useAuth();
-  const [authError, setAuthError] = useState();
+  const auth = useAuth();
+  const inpRepeat = useRef();
 
-  const inputRef = useRef(null);
-  const validationSchema = object().shape({
-    username: string()
+  const validationSchema = Yup.object().shape({
+    username: Yup.string()
       .min(3, i18next.t('errors.loginLength'))
       .max(20, i18next.t('errors.loginLength'))
       .required(i18next.t('errors.required')),
-    password: string()
+    password: Yup.string()
       .min(6, i18next.t('errors.passwordLength'))
       .max(20, i18next.t('errors.passwordLength'))
       .required(i18next.t('errors.required')),
-    repeatPassword: string()
+    repeatPassword: Yup.string()
       .required(i18next.t('errors.required'))
-      .oneOf([ref('password'), null], i18next.t('errors.mustMatch')),
+      .oneOf([Yup.ref('password'), null], i18next.t('errors.coincidePass')),
   });
 
-  useEffect(() => {
-    inputRef.current.focus();
-  }, []);
-
-  const handleSubmit = async ({ ...values }) => {
+  const onSubmit = async (values) => {
     try {
-      await onSignup(values);
-      toast.success('Успешно!');
-      navigate('/');
-    } catch (err) {
-      switch (err.message) {
-        case '409':
-          setAuthError('Пользователь с этими данными уже существует');
-          break;
-        case '401':
-          setAuthError('Неверные имя пользователя или пароль');
-          break;
-        case '500':
-          toast.error('Сервер не отвечает');
-          break;
-        case '0':
-          toast.error('Потеряно интернет соединение');
-          break;
-        default:
-          toast.error('Неизвестная ошибка');
+      console.log(values);
+      const response = await axios.post(routes.apiSignupPath, {
+        username: values.username,
+        password: values.password,
+      });
+      const { data } = response;
+      auth.setUser(data);
+      navigate(routes.loginPath);
+    } catch (error) {
+      if (error.response) {
+        navigate(routes.conflictPath);
+        console.error(error.response.status);
       }
     }
-  }
+  };
 
   return (
     <Container fluid className="h-100">
@@ -68,56 +54,109 @@ const SignupPage = () => {
           <Card className="shadow-sm">
             <Card.Body className="d-flex flex-column flex-md-row justify-content-around align-items-center p-5">
               <Col md={6} className="col-12 d-flex align-items-center justify-content-center">
-                <img className="rounded-circle" src={signupImage} alt="Регистрация" />
+                <img
+                  src={signupImage}
+                  width={200}
+                  className="rounded-circle"
+                  alt='Регистрация'
+                />
               </Col>
-              <Formik className="w-50"
-                initialValues={{ username: '', password: '', passwordConfirmation: '' }}
-                onSubmit={handleSubmit}
+              <Formik
+                initialValues={{ username: '', password: '', repeatPassword: '' }}
                 validationSchema={validationSchema}
+                onSubmit={onSubmit}
               >
                 {({
                   values,
+                  handleChange,
+                  isSubmitting,
+                  handleSubmit,
+                  handleBlur,
                   errors,
                   touched,
-                  handleBlur,
-                  handleChange,
-                  handleSubmit,
-                  isSubmitting,
                 }) => (
-                  <Form className="col-12 col-md-6 mt-3 mt-md-0" onSubmit={handleSubmit} noValidate>
+                  <Form
+                    noValidate
+                    onSubmit={handleSubmit}
+                    className="col-12 col-md-6 mt-3 mt-mb-0"
+                  >
                     <h1 className="text-center mb-4">Регистрация</h1>
-                    <TextField
-                      ref={inputRef}
-                      name="username"
-                      placeholder='Имя пользователя'
-                      error={authError || errors.username}
-                      errorMessage={errors.username}
-                      value={values.username}
-                      touched={touched.username}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                    />
-                    <TextField
-                      name="password"
-                      placeholder='Пароль'
-                      error={authError || errors.password}
-                      errorMessage={authError || errors.password}
-                      value={values.password}
-                      touched={touched.password}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                    />
-                    <TextField
-                      name="passwordConfirmation"
-                      placeholder='Подтвердите пароль'
-                      error={authError || errors.passwordConfirmation}
-                      errorMessage={authError || errors.passwordConfirmation}
-                      value={values.passwordConfirmation}
-                      touched={touched.passwordConfirmation}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                    />
-                    <button className="w-100 mb-3 btn btn-outline-primary" type="submit" disabled={isSubmitting}>Зарегистрироваться</button>
+                    <Form.Group className="mb-3 position-relative">
+                      <div className="form-floating mb-3">
+                        <Form.Control
+                          type="text"
+                          name="username"
+                          placeholder='Имя пользователя'
+                          id="username"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.username}
+                          isInvalid={touched.username && errors.username}
+                          autoFocus
+                        />
+                        <Form.Label htmlFor="username">Имя пользователя</Form.Label>
+                        <ErrorMessage name="username">
+                          {(msg) => (
+                            <div className=" invalid-tooltip">{msg}</div>
+                          )}
+                        </ErrorMessage>
+                      </div>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <div className="form-floating mb-3">
+                        <Form.Control
+                          name="password"
+                          type="password"
+                          autoComplete="password"
+                          required
+                          onBlur={handleBlur}
+                          placeholder='Пароль'
+                          id="password"
+                          onChange={handleChange}
+                          value={values.password}
+                          isInvalid={touched.password && errors.password}
+                        />
+                        <Form.Label htmlFor="password">Пароль</Form.Label>
+                        <ErrorMessage name="password">
+                          {(msg) => (
+                            <div className=" invalid-tooltip">{msg}</div>
+                          )}
+                        </ErrorMessage>
+                      </div>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <div className="form-floating mb-3">
+                        <Form.Control
+                          name="repeatPassword"
+                          type="password"
+                          autoComplete="repeatPassword"
+                          required
+                          placeholder='Подтвердите пароль'
+                          id="repeat-password"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.repeatPassword}
+                          isInvalid={
+                            touched.repeatPassword && errors.repeatPassword
+                          }
+                          ref={inpRepeat}
+                        />
+                        <Form.Label htmlFor="repeat-password">
+                        Подтвердите пароль
+                        </Form.Label>
+                        <Form.Control.Feedback type="invalid" tooltip>
+                          {errors.repeatPassword}
+                        </Form.Control.Feedback>
+                      </div>
+                    </Form.Group>
+                    <Button
+                      type="submit"
+                      className="w-100 mb-3 btn btn-outline-primary"
+                      variant="outline-primary"
+                      disabled={isSubmitting}
+                    >
+                      Зарегистрироваться
+                    </Button>
                   </Form>
                 )}
               </Formik>
@@ -126,7 +165,7 @@ const SignupPage = () => {
         </Col>
       </Row>
     </Container>
-  )
-}
+  );
+};
 
 export default SignupPage;

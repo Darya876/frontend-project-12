@@ -1,22 +1,16 @@
-// import { useContext } from 'react';
-// import { toast } from 'react-toastify';
-// import { useTranslation } from 'react-i18next';
-// import AuthContext from './contexts/AuthContext.jsx'
+import useAuth from '../hooks';
 
 const NavBar = () => {
-  // const { t } = useTranslation();
-  // const useAuth = () => useContext();
-  // const { isLoggedIn, onLogout } = useAuth(AuthContext);
-  // const handleLogout = () => {
-  //   onLogout();
-  //   toast.info(t('toastMessagess.success'));
-  // };
+  const OutButton = () => {
+    const { activeUser, logOut } = useAuth();
+    return activeUser ? <button type="button" onClick={logOut} className="btn btn-primary">Выйти</button> : null;
+  }
 
   return (
     <nav className="shadow-sm navbar navbar-expand-lg navbar-light bg-white">
       <div className="container">
         <a className="navbar-brand" href="/">Hexlet Chat</a>
-        <button type="button" className="btn btn-primary">Выйти</button>
+        <OutButton />
       </div>
     </nav>
   )

@@ -1,97 +1,130 @@
-import { Button, ButtonGroup, Col, Nav, Dropdown } from 'react-bootstrap';
+import { Button, ButtonGroup, Dropdown, Col } from 'react-bootstrap';
+import { useState } from 'react';
 import { PlusSquare } from 'react-bootstrap-icons';
 import { useSelector, useDispatch } from 'react-redux';
 // import { useTranslation } from 'react-i18next';
-import { getAllChannels, getCurrentChannelId } from '../../../redux/selectors.js';
-import { openModal } from '../../../redux/modalsSlice';
-import { actions } from '../../../redux/channelsSlice.js';
+import { setActiveChannel } from '../../../redux/channels.js'
+import { chooseModal } from '../../../redux/modals.js';
+import getModal from '../../modals/index.js'
 import filter from 'leo-profanity';
+import cn from 'classnames';
 
 const Channels = () => {
+  const [channelNumber, setChannelNumber] = useState(null);
   const dispatch = useDispatch();
   // const { t } = useTranslation();
-  const channels = useSelector((state) => getAllChannels(state));
-  const currentChannelId = useSelector((state) => getCurrentChannelId(state));
-  const showModal = (type, id) => () => {
-    dispatch(openModal({ type, id }));
+  const tChannels = 'Каналы';
+  const channels = useSelector((state) => state.channelsSlice.channels);
+  const activeChannel = useSelector(
+    (state) => state.channelsSlice.activeChannel,
+  );
+  const typeModal = useSelector((state) => state.modalsSlice.typeModal);
+  const btnClassLight = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-light');
+  const btnClassSecondary = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-secondary');
+  const dropDownClassLight = cn('square', 'border', 'border-0', 'btn-light');
+  const dropDownClassSecondary = cn('square', 'border', 'border-0', 'btn-secondary');
+
+  const manageChannel = (modalType) => (e) => {
+    e.preventDefault();
+    dispatch(chooseModal(modalType));
+    setChannelNumber(e.target.getAttribute('data-index'));
+  };
+
+  const RenderModal = ({ value }) => {
+    if (value) {
+      const getModalValue = getModal(value);
+      const params = {
+        channelNumber,
+      };
+      return getModalValue(params);
+    }
+    return null;
+  };
+
+  const handleClick = (id) => {
+    dispatch(setActiveChannel(id));
   };
 
   return (
-    <Col
-      md="2"
-      className="col-4 border-end pt-5 px-0 bg-light"
-    >
-      <div className="d-flex justify-content-between mb-2 ps-4 pe-2">
-        <span>Каналы</span>
-        <Button
-          type="button"
-          variant="group-vertical"
-          className="p-0 text-primary"
-          onClick={showModal('add')}
+    <>
+      <Col md="2" className="col-4 border-end px-0 bg-light flex-column h-100 d-flex">
+        <div className="d-flex mt-1 justify-content-between mb-2 ps-4 pe-2 p-4">
+          <b>{tChannels}</b>
+          <Button
+            type="button"
+            variant="light"
+            className="p-0 text-primary btn btn-group-vertical"
+            onClick={manageChannel('adding')}
+          >
+            <PlusSquare size={20} />
+            <span className="visually-hidden">+</span>
+          </Button>
+        </div>
+        <ul
+          id="channels-box"
+          className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block"
         >
-          <PlusSquare size={20} />
-          <span className="visually-hidden">+</span>
-        </Button>
-      </div>
-      <Nav
-        fill
-        variant="pills"
-        as="ul"
-        className="flex-column px-2"
-      >
-        {channels && currentChannelId && (
-          channels.map(({ id, name, removable }) => {
-            const variant = id === currentChannelId ? 'secondary' : 'light';
+          {channels.map(({ name, id, removable }) => { 
             const filteredName = filter.clean(name);
-            return (removable) ? (
-              <Nav.Item key={id} className="w-100">
-                <Dropdown
-                  as={ButtonGroup}
-                  className="d-flex rounded-0"
-                >
-                  <Button
-                    variant={variant}
-                    className="w-100 rounded-0 text-start text-truncate"
-                    onClick={() => { dispatch(actions.setCurrentChannelId(id)); }}
+            return (
+              <li
+                className="nav-item w-100 position-relative"
+                key={id}
+                id={id}
+              >
+                <ButtonGroup className="d-flex">
+                  <button
+                    type="button"
+                    onClick={() => handleClick(id)}
+                    className={
+                      id === activeChannel
+                        ? btnClassSecondary
+                        : btnClassLight
+                    }
                   >
                     <span className="me-1">#</span>
                     {filteredName}
-                  </Button>
-                  <Dropdown.Toggle
-                    variant={variant}
-                  >
-                    <span className="visually-hidden">Управление каналом</span>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={showModal('rename', id)}
-                    >
-                      Переименовать
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={showModal('delete', id)}
-                    >
-                      Удалить
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Nav.Item>
-            ) : (
-              <Nav.Item key={id}>
-                <Button
-                  variant={variant}
-                  className="w-100 rounded-0 text-start text-truncate"
-                  onClick={() => { dispatch(actions.setCurrentChannelId(id)); }}
-                >
-                  <span className="me-1">#</span>
-                  {filteredName}
-                </Button>
-              </Nav.Item>
-            );
-          })
-        )}
-      </Nav>
-    </Col>
+                  </button>
+                  {removable ? (
+                    <Dropdown as={ButtonGroup}>
+                      <Dropdown.Toggle
+                        className={
+                          id === activeChannel
+                            ? dropDownClassSecondary
+                            : dropDownClassLight
+                        }
+                        id="dropdown-basic"
+                      >
+                        <span className="visually-hidden">Управление каналом</span>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item
+                          type="button"
+                          href="#/action-1"
+                          data-index={id}
+                          onClick={manageChannel('removing')}
+                        >
+                          Удалить
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          type="button"
+                          href="#/action-2"
+                          data-index={id}
+                          onClick={manageChannel('renaming')}
+                        >
+                          Переименовать
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  ) : null}
+                </ButtonGroup>
+              </li>
+            )
+          })}
+        </ul>
+      </Col>
+      {typeModal ? <RenderModal value={typeModal} /> : null}
+    </>
   );
 };
 

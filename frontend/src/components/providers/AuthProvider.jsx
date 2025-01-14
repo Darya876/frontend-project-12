@@ -1,55 +1,31 @@
 import { useState } from 'react';
-import axios from 'axios';
 import AuthContext from '../contexts/AuthContext';
 
 const AuthProvider = ({ children }) => {
-  const authData = JSON.parse(localStorage.getItem('authtoken'));
-  const [isLoggedIn, setLoggedIn] = useState(!!authData?.token);
-  const [username, setUsername] = useState(authData?.username);
+  const name = JSON.parse(localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')).username : null;
 
-  const onAuth = async (values, type) => {
-    try {
-      console.log(type);
-      const response = await axios.post(`/api/v1/${type}`, values);
-      console.log(response);
-      const authDat = response.data;
-      const { status } = response;
-      localStorage.setItem(
-        'authtoken',
-        JSON.stringify({ token: authDat.token, username: authDat.username }),
-      );
-      setUsername(authDat.username);
-      setLoggedIn(true);
-      return {
-        status,
-      };
-    } catch (e) {
-      const errorCode = e.response.status;
-      throw new Error(errorCode);
-    }
-  };
-  const onLogin = async (values) => onAuth(values, 'login');
-  const onSignup = async (values) => onAuth(values, 'signup');
+  const [activeUser, setActiveUser] = useState(name);
 
-  const onLogout = () => {
-    localStorage.removeItem('authtoken');
-    setLoggedIn(false);
+  const setUser = (data) => {
+    const { username } = data;
+    setActiveUser(username);
+    window.localStorage.setItem('user', JSON.stringify(data));
   };
-  const getAuthHeader = () =>
-    isLoggedIn ? { Authorization: `Bearer ${authData.token}` } : {};
 
-  const value = {
-    username,
-    isLoggedIn,
-    getAuthHeader,
-    onLogin,
-    onSignup,
-    onLogout,
+  const logOut = () => {
+    setActiveUser(null);
+    localStorage.removeItem(activeUser);
   };
+
+  const user = localStorage.length > 0 && JSON.parse(localStorage.getItem('user'));
+  console.log(user);
+  const header = { Authorization: `Bearer ${user.token}` };
+
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ logOut, activeUser, user, setUser, header }}>
       {children}
-    </AuthContext.Provider>);
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthProvider;

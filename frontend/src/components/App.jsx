@@ -8,30 +8,34 @@ import ChatPage from './pages/ChatPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
 import NavBar from './NavBar.jsx';
+import routes from '../routes.js';
 
 const App = () => {
   const ProtectedRoute = ({ children }) => {
     const useAuth = () => useContext(AuthContext);
-    const { isLoggedIn } = useAuth();
-    return isLoggedIn ? children : (<Navigate to="/login" />);
+    const { activeUser } = useAuth();
+    return activeUser ? children : (<Navigate to={routes.loginPath} />);
   }
 
   return (
-    <MainContainer>
-      <NavBar />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={(
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          )} />
-          <Route path="/login" element={(<LoginPage />)} />
-          <Route path="/signup" element={(<SignupPage />)} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
-    </MainContainer>
+    <>
+      <MainContainer>
+        <NavBar />
+        <BrowserRouter>
+          <Routes>
+            <Route path={routes.root} element={(
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            )} />
+            <Route path={routes.loginPath} element={(<LoginPage />)} />
+            <Route path={routes.signupPath} element={(<SignupPage />)} />
+            <Route path={routes.conflictPath} element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </MainContainer>
+      <div className="Toastify"></div>
+    </>
   )
 }
 
