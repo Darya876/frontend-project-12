@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import AuthContext from '../contexts/AuthContext';
+import AuthContext from '../contexts/AuthContext'; 
 
 const AuthProvider = ({ children }) => {
   const name = JSON.parse(localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')).username : null;
@@ -9,7 +9,7 @@ const AuthProvider = ({ children }) => {
   const setUser = (data) => {
     const { username } = data;
     setActiveUser(username);
-    window.localStorage.setItem('user', JSON.stringify(data));
+    // localStorage.setItem('user', JSON.stringify(data));
   };
 
   const logOut = () => {
@@ -18,11 +18,18 @@ const AuthProvider = ({ children }) => {
   };
 
   const user = localStorage.length > 0 && JSON.parse(localStorage.getItem('user'));
-  console.log(user);
   const header = { Authorization: `Bearer ${user.token}` };
 
+  const value = {
+    activeUser,
+    user,
+    header,
+    logOut,
+    setUser,
+  }
+
   return (
-    <AuthContext.Provider value={{ logOut, activeUser, user, setUser, header }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

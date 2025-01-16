@@ -11,7 +11,7 @@ import loginImage from '../../assets/login.jpg';
 import routes from '../../routes.js'
 
 const LoginPage = () => {
-  const auth = useAuth();
+  const { activeUser, setUser } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef();
 
@@ -27,8 +27,8 @@ const LoginPage = () => {
         password: values.password,
       });
       const { data } = response;
-      auth.setUser(data);
-      navigate(routes.root);
+      activeUser ? navigate(routes.root) : null;
+      setUser(data);
       console.log(response);
     } catch (error) {
       if (error.response) {

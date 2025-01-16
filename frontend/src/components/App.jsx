@@ -23,6 +23,7 @@ const App = () => {
         <NavBar />
         <BrowserRouter>
           <Routes>
+            {/* <Route path="/" element={(<ChatPage />)} /> */}
             <Route path={routes.root} element={(
               <ProtectedRoute>
                 <ChatPage />

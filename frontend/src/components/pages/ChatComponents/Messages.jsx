@@ -18,7 +18,9 @@ import useAuth from '../../../hooks/index.jsx';
 
 const Messages = () => {
   const auth = useAuth();
+  // console.log(auth);
   const { activeUser, user } = auth;
+  // console.log(activeUser);
   const { token } = user;
   const dispatch = useDispatch();
   const { emitMessage } = useContext(ApiContext);

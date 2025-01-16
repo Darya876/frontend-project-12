@@ -4,15 +4,16 @@ import { Formik, ErrorMessage } from 'formik';
 import { Container, Col, Card, Row } from 'react-bootstrap';
 import * as Yup from 'yup';
 import { Button, Form } from 'react-bootstrap';
-import axios from 'axios';
+// import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/index.jsx';
 import signupImage from '../../assets/signup.jpg';
 import routes from '../../routes.js';
+import axios from 'axios';
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const auth = useAuth();
+  const { setUser } = useAuth();
   const inpRepeat = useRef();
 
   const validationSchema = Yup.object().shape({
@@ -31,18 +32,19 @@ const SignupPage = () => {
 
   const onSubmit = async (values) => {
     try {
-      console.log(values);
       const response = await axios.post(routes.apiSignupPath, {
         username: values.username,
         password: values.password,
       });
       const { data } = response;
-      auth.setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      console.log(data);
       navigate(routes.loginPath);
-    } catch (error) {
-      if (error.response) {
-        navigate(routes.conflictPath);
-        console.error(error.response.status);
+      setUser(data);
+    } catch (err) {
+      if (err.response) {
+        console.error(err.response.status);
+        // toast.error(`Error: ${err.message}`)
       }
     }
   };
