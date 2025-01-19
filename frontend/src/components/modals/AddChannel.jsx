@@ -45,7 +45,7 @@ const AddChannel = () => {
 
   const onSubmit = async (values, { setSubmitting }) => {
     const newChannel = {
-      id: _.uniqueId(),
+      id: Number(_.uniqueId()),
       name: filter.clean(values.name),
       removable: true,
     };

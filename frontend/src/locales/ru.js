@@ -22,5 +22,8 @@ export default {
       required: 'Обязательное поле',
       serverErrors: 'Неверные имя пользователя или пароль'
     },
+    messages: {
+      msg: '{{count}} сообщений',
+    }
   },
 };

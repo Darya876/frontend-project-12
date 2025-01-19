@@ -3,8 +3,8 @@ import _ from 'lodash';
 
 const initialState = {
   channels: [
-    { id: _.uniqueId(), name: 'general', removable: false },
-    { id: _.uniqueId(), name: 'random', removable: false },
+    { id: Number(_.uniqueId()), name: 'general', removable: false },
+    { id: Number(_.uniqueId()), name: 'random', removable: false },
   ],
   activeChannel: 1,
 };
@@ -25,13 +25,13 @@ const channelsSlice = createSlice({
     },
     removeChannel: (state, { payload }) => {
       state.channels = state.channels.filter(
-        (channel) => channel.id !== payload,
+        (channel) => channel.id !== +payload,
       );
       state.activeChannel = 1;
     },
     renameChannel: (state, { payload }) => {
       const { id } = payload;
-      const targetChannel = state.channels.filter((channel) => channel.id === id)[0];
+      const targetChannel = state.channels.filter((channel) => channel.id === +id)[0];
       _.assign(targetChannel, payload);
     },
   },

@@ -25,7 +25,9 @@ const Channels = () => {
   const manageChannel = (typeModal) => (e) => {
     e.preventDefault();
     dispatch(chooseModal(typeModal));
-    setChannelNumber(e.target.getAttribute('data-index'));
+    if (e.target.getAttribute('data-index')) {
+      setChannelNumber(e.target.getAttribute('data-index'));
+    }
   };
 
   const RenderModal = ({ value }) => {
@@ -42,8 +44,6 @@ const Channels = () => {
   const handleClick = (id) => {
     dispatch(setActiveChannel(id));
   };
-
-  console.log(useSelector((state) => state.channels));
 
   return (
     <>
@@ -129,13 +129,3 @@ const Channels = () => {
 };
 
 export default Channels;
-
-// const Channels = () => {
-//   return (
-//     <div>
-//       Hey hey hey!
-//     </div>
-//   );
-// };
-
-// export default Channels;

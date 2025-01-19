@@ -45,7 +45,7 @@ const RenameChannel = (params) => {
   const onSubmit = async (values, { setSubmitting }) => {
     const targetChannel = {
       name: values.channel,
-      id: values.id,
+      id: +values.id,
     };
     try {
       await emitChannel('renameChannel', targetChannel);
