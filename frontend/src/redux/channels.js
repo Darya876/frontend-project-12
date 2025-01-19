@@ -2,7 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
 const initialState = {
-  channels: [],
+  channels: [
+    { id: _.uniqueId(), name: 'general', removable: false },
+    { id: _.uniqueId(), name: 'random', removable: false },
+  ],
   activeChannel: 1,
 };
 

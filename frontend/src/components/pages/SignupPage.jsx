@@ -14,7 +14,7 @@ import axios from 'axios';
 const SignupPage = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-  const inpRepeat = useRef();
+  const inpRepeat = useRef(null);
 
   const validationSchema = Yup.object().shape({
     username: Yup.string()
@@ -37,10 +37,8 @@ const SignupPage = () => {
         password: values.password,
       });
       const { data } = response;
-      localStorage.setItem('user', JSON.stringify(data));
-      console.log(data);
-      navigate(routes.loginPath);
       setUser(data);
+      navigate(routes.loginPath);
     } catch (err) {
       if (err.response) {
         console.error(err.response.status);

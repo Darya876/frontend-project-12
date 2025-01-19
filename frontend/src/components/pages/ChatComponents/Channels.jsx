@@ -13,20 +13,18 @@ const Channels = () => {
   const [channelNumber, setChannelNumber] = useState(null);
   const dispatch = useDispatch();
   // const { t } = useTranslation();
-  const tChannels = 'Каналы';
-  const channels = useSelector((state) => state.channelsSlice.channels);
-  const activeChannel = useSelector(
-    (state) => state.channelsSlice.activeChannel,
-  );
-  const typeModal = useSelector((state) => state.modalsSlice.typeModal);
+  const channels = useSelector((state) => state.channels.channels);
+  const activeChannel = useSelector((state) => state.channels.activeChannel);
+  const typeModal = useSelector((state) => state.modals.typeModal);
+
   const btnClassLight = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-light');
   const btnClassSecondary = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-secondary');
   const dropDownClassLight = cn('square', 'border', 'border-0', 'btn-light');
   const dropDownClassSecondary = cn('square', 'border', 'border-0', 'btn-secondary');
 
-  const manageChannel = (modalType) => (e) => {
+  const manageChannel = (typeModal) => (e) => {
     e.preventDefault();
-    dispatch(chooseModal(modalType));
+    dispatch(chooseModal(typeModal));
     setChannelNumber(e.target.getAttribute('data-index'));
   };
 
@@ -45,11 +43,13 @@ const Channels = () => {
     dispatch(setActiveChannel(id));
   };
 
+  console.log(useSelector((state) => state.channels));
+
   return (
     <>
       <Col md="2" className="col-4 border-end px-0 bg-light flex-column h-100 d-flex">
         <div className="d-flex mt-1 justify-content-between mb-2 ps-4 pe-2 p-4">
-          <b>{tChannels}</b>
+          <b>Каналы</b>
           <Button
             type="button"
             variant="light"
@@ -64,15 +64,15 @@ const Channels = () => {
           id="channels-box"
           className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block"
         >
-          {channels.map(({ name, id, removable }) => { 
+          {channels.map(({ id, name, removable }) => { 
             const filteredName = filter.clean(name);
             return (
               <li
-                className="nav-item w-100 position-relative"
+                className="nav-item w-100"
                 key={id}
                 id={id}
               >
-                <ButtonGroup className="d-flex">
+                <ButtonGroup className="w-100 rounded-0 text-start">
                   <button
                     type="button"
                     onClick={() => handleClick(id)}
@@ -129,3 +129,13 @@ const Channels = () => {
 };
 
 export default Channels;
+
+// const Channels = () => {
+//   return (
+//     <div>
+//       Hey hey hey!
+//     </div>
+//   );
+// };
+
+// export default Channels;

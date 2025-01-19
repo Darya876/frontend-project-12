@@ -11,7 +11,7 @@ import ApiContext from '../contexts/ApiContext.jsx';
 const RemoveChannel = (params) => {
   const dispatch = useDispatch();
   const { channelNumber } = params;
-  const { showModal } = store.getState().modalsSlice;
+  const { showModal } = store.getState().modals;
   const { emitChannel } = useContext(ApiContext);
   // const { t } = useTranslation();
 
@@ -24,6 +24,18 @@ const RemoveChannel = (params) => {
     notify();
   };
 
+  const onSubmit = async (values, { setSubmitting }) => {
+    try {
+      await emitChannel('removeChannel', { id: values.id });
+      setNotify('Канал удалён', 'success');
+    } catch (err) {
+      console.error(err.message);
+      setNotify('Канал не удалён', 'error');
+    }
+    close();
+    setSubmitting(false);
+  }
+
   return (
     <div className="fade modal show" tabIndex="-1">
       <Modal show={showModal} onHide={close} centered>
@@ -35,17 +47,7 @@ const RemoveChannel = (params) => {
             initialValues={{
               id: channelNumber,
             }}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                await emitChannel('removeChannel', { id: values.id });
-                setNotify('Канал удалён', 'success');
-              } catch (err) {
-                setNotify(err.message, 'error');
-              }
-              // выше вместо err.message => t(.....) Канал не удален
-              close();
-              setSubmitting(false);
-            }}
+            onSubmit={onSubmit}
           >
             {({ handleSubmit }) => (
               <Form noValidate="" onSubmit={handleSubmit}>
@@ -57,7 +59,7 @@ const RemoveChannel = (params) => {
                       className="me-2 rounded btn btn-secondary"
                       onClick={close}
                     >
-                      Удалить
+                      Отменить
                     </Button>
                     <Button type="submit" className="rounded btn btn-danger">
                       Удалить

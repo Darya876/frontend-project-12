@@ -12,19 +12,15 @@ import ApiContext from '../contexts/ApiContext.jsx';
 
 const RenameChannel = (params) => {
   const dispatch = useDispatch();
-  const { showModal } = store.getState().modalsSlice;
+  const { showModal } = store.getState().modals;
   const { channelNumber } = params;
-  const channels = useSelector((state) => state.channelsSlice.channels);
+  const channels = useSelector((state) => state.channels.channels);
   const { emitChannel } = useContext(ApiContext);
   // const { t } = useTranslation();
 
   const close = () => {
     dispatch(closeModal());
   };
-
-  const [renamingChannel] = channels.filter(
-    (channel) => channel.id === +channelNumber,
-  );
 
   const validationSchema = Yup.object().shape({
     channel: Yup.string()
@@ -46,6 +42,21 @@ const RenameChannel = (params) => {
     notify();
   };
 
+  const onSubmit = async (values, { setSubmitting }) => {
+    const targetChannel = {
+      name: values.channel,
+      id: values.id,
+    };
+    try {
+      await emitChannel('renameChannel', targetChannel);
+      setNotify('Канал переименован', 'success');
+    } catch (err) {
+      setNotify(err.message, 'error');
+    }
+    close();
+    setSubmitting(false);
+  }
+
   return (
     <div className="fade modal show" tabIndex="-1">
       <Modal show={showModal} onHide={close} centered>
@@ -56,23 +67,10 @@ const RenameChannel = (params) => {
           <Formik
             validationSchema={validationSchema}
             initialValues={{
-              channel: renamingChannel.name,
+              channel: name,
               id: channelNumber,
             }}
-            onSubmit={async (values, { setSubmitting }) => {
-              const targetChannel = {
-                name: values.channel,
-                id: values.id,
-              };
-              try {
-                await emitChannel('renameChannel', targetChannel);
-                setNotify('Канал переименован', 'success');
-              } catch (err) {
-                setNotify(err.message, 'error');
-              }
-              close();
-              setSubmitting(false);
-            }}
+            onSubmit={onSubmit}
           >
             {({
               values,
@@ -110,7 +108,7 @@ const RenameChannel = (params) => {
                       className="me-2 rounded"
                       onClick={close}
                     >
-                      Переименовать канал
+                      Отменить
                     </Button>
                     <Button variant="primary" type="submit" className="rounded">
                       Отправить

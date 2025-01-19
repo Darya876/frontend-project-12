@@ -13,7 +13,7 @@ import routes from '../../routes.js'
 const LoginPage = () => {
   const { activeUser, setUser } = useAuth();
   const navigate = useNavigate();
-  const inputRef = useRef();
+  const inputRef = useRef(null);
 
   const validationSchema = object({
     username: string().required(i18next.t('errors.serverErrors')),
@@ -29,7 +29,6 @@ const LoginPage = () => {
       const { data } = response;
       activeUser ? navigate(routes.root) : null;
       setUser(data);
-      console.log(response);
     } catch (error) {
       if (error.response) {
         inputRef.current.select();

@@ -9,7 +9,7 @@ const AuthProvider = ({ children }) => {
   const setUser = (data) => {
     const { username } = data;
     setActiveUser(username);
-    // localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem('user', JSON.stringify(data));
   };
 
   const logOut = () => {

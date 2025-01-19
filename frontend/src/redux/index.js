@@ -5,8 +5,8 @@ import modalsSliceReducer from './modals';
 
 export default configureStore({
   reducer: {
-    channelsSlice: channelsSliceReducer,
-    messagesSlice: messagesSliceReducer,
-    modalsSlice: modalsSliceReducer,
+    channels: channelsSliceReducer,
+    messages: messagesSliceReducer,
+    modals: modalsSliceReducer,
   },
 });

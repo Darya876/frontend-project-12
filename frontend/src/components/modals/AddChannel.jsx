@@ -10,13 +10,12 @@ import filter from 'leo-profanity';
 import store from '../../redux/index.js'
 import { closeModal } from '../../redux/modals.js';
 import ApiContext from '../contexts/ApiContext.jsx';
-import useAuth from '../../hooks/index.jsx';
+import _ from 'lodash';
 
 const AddChannel = () => {
-  const auth = useAuth();
   const dispatch = useDispatch();
-  const { showModal } = store.getState().modalsSlice;
-  const channels = useSelector((state) => state.channelsSlice.channels);
+  const { showModal } = store.getState().modals;
+  const channels = useSelector((state) => state.channels.channels);
   const { emitChannel } = useContext(ApiContext);
   // const { t } = useTranslation();
 
@@ -44,7 +43,22 @@ const AddChannel = () => {
     notify();
   };
 
-  const { activeUser } = auth;
+  const onSubmit = async (values, { setSubmitting }) => {
+    const newChannel = {
+      id: _.uniqueId(),
+      name: filter.clean(values.name),
+      removable: true,
+    };
+    try {
+      await emitChannel('newChannel', newChannel);
+      setNotify('Канал создан', 'success');
+    } catch (err) {
+      console.error(err.message);
+      setNotify('Канал не создан', 'error');
+    }
+    close();
+    setSubmitting(false);
+  }
 
   return (
     <div className="fade modal show" tabIndex="-1">
@@ -56,20 +70,7 @@ const AddChannel = () => {
           <Formik
             validationSchema={validationSchema}
             initialValues={{ name: '' }}
-            onSubmit={async (values, { setSubmitting }) => {
-              const newChannel = {
-                name: filter.clean(values.name),
-                user: activeUser,
-              };
-              try {
-                await emitChannel('newChannel', newChannel);
-                setNotify('Канал создан', 'success');
-              } catch (err) {
-                setNotify(err.message, 'error');
-              }
-              close();
-              setSubmitting(false);
-            }}
+            onSubmit={onSubmit}
           >
             {({
               values,
@@ -107,7 +108,7 @@ const AddChannel = () => {
                       className="me-2 rounded"
                       onClick={close}
                     >
-                      Добавить канал
+                      Отменить
                     </Button>
                     <Button variant="primary" type="submit" className="rounded">
                       Отправить

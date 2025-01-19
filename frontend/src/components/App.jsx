@@ -35,7 +35,7 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </MainContainer>
-      <div className="Toastify"></div>
+      {/* <div className="Toastify"></div> */}
     </>
   )
 }
