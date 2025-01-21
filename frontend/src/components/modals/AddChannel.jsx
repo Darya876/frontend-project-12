@@ -1,64 +1,59 @@
-import i18next from 'i18next';
-import { useContext, useEffect, useRef } from 'react';
-import * as Yup from 'yup';
+import { useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
-import { Button, ButtonGroup, Form, Modal } from 'react-bootstrap';
 import { Formik, ErrorMessage } from 'formik';
-import filter from 'leo-profanity';
+import {
+  Form, Button, Modal, ButtonGroup
+} from 'react-bootstrap';
+import * as Yup from 'yup';
 // import { useTranslation } from 'react-i18next';
-import store from '../../redux/index.js'
-import { closeModal } from '../../redux/modals.js';
-import ApiContext from '../contexts/ApiContext.jsx';
+import { toast } from 'react-toastify';
+import { hideModal } from '../../redux/modals';
+import { addChannel, setCurrentChannelId } from '../../redux/channels';
+import useApi from '../../hooks/useApi.jsx';
+import { showModal } from '../../redux/modals';
 import _ from 'lodash';
 
 const AddChannel = () => {
-  const dispatch = useDispatch();
-  const { showModal } = store.getState().modals;
   const channels = useSelector((state) => state.channels.channels);
-  const { emitChannel } = useContext(ApiContext);
+  const dispatch = useDispatch();
   // const { t } = useTranslation();
+  const chatApi = useApi();
+  const inputEl = useRef();
 
-  const close = () => {
-    dispatch(closeModal());
-  };
-
-  const validationSchema = Yup.object().shape({
-    name: Yup.string()
-      .min(3, i18next.t('errors.channelLength'))
-      .max(20, i18next.t('errors.channelLength'))
-      .notOneOf(
-        channels.map((channel) => channel.name),
-        i18next.t('errors.uniqName'),
-      ),
-  });
-
-  const inputChannel = useRef();
   useEffect(() => {
-    inputChannel.current?.select();
+    inputEl.current.select();
   }, []);
 
-  const setNotify = (text, result) => {
-    const notify = () => toast[result](text);
-    notify();
+  const close = () => {
+    dispatch(hideModal());
   };
 
-  const onSubmit = async (values, { setSubmitting }) => {
-    const newChannel = {
-      id: Number(_.uniqueId()),
-      name: filter.clean(values.name),
+  const validationSchema = Yup.object({
+    name: Yup
+      .string()
+      .min(3, 'addModal.validation.length')
+      .notOneOf(channels.map((channel) => channel.name), 'addModal.validation.unique')
+      .required('addModal.validation.required'),
+  });
+
+  const onSubmit = async (values) => {
+    const channelData = {
+      id: _.uniqueId(),
+      name: values.name,
       removable: true,
     };
     try {
-      await emitChannel('newChannel', newChannel);
-      setNotify('Канал создан', 'success');
+      const response = await chatApi.addChannel(channelData);
+      console.log(response);
+      dispatch(addChannel(channelData));
+      dispatch(setCurrentChannelId(response.id));
+      dispatch(hideModal());
+      toast.success('Канал создан', 'success');
     } catch (err) {
-      console.error(err.message);
-      setNotify('Канал не создан', 'error');
+      toast.error('Канал не создан', 'error');
+      console.error(err);
     }
-    close();
-    setSubmitting(false);
-  }
+  };
 
   return (
     <div className="fade modal show" tabIndex="-1">
@@ -90,7 +85,7 @@ const AddChannel = () => {
                     aria-label="Имя канала"
                     onChange={handleChange}
                     value={values.channel}
-                    ref={inputChannel}
+                    ref={inputEl}
                     isInvalid={touched.name && errors.name}
                     required
                     title='Добавить канал'

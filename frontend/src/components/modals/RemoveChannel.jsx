@@ -4,8 +4,8 @@ import { toast } from 'react-toastify';
 import { Button, ButtonGroup, Form, Modal } from 'react-bootstrap';
 import { Formik } from 'formik';
 // import { useTranslation } from 'react-i18next';
-import store from '../../redux/index.js'
-import { closeModal } from '../../redux/modals.js';
+import store from '../../redux/store.js'
+// import { closeModal } from '../../redux/modals.js';
 import ApiContext from '../contexts/ApiContext.jsx';
 
 const RemoveChannel = (params) => {

@@ -1,47 +1,41 @@
 import i18next from 'i18next';
 import { object, string } from 'yup';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Formik, ErrorMessage } from 'formik';
 import { Container, Col, Card, Row } from 'react-bootstrap';
 import { Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/index.jsx';
+import useAuth from '../../hooks/useAuth.jsx';
 import loginImage from '../../assets/login.jpg';
 import routes from '../../routes.js'
 
 const LoginPage = () => {
-  const { activeUser, setUser } = useAuth();
+  const [authError, setAuthError] = useState(null);
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const { logIn }= useAuth()
 
   const validationSchema = object({
     username: string().required(i18next.t('errors.serverErrors')),
     password: string().required(i18next.t('errors.serverErrors')),
   });
 
-  const onSubmit = async (values, { setErrors }) => {
+  const onSubmit = async (values) => {
     try {
       const response = await axios.post(routes.apiLoginPath, {
         username: values.username,
         password: values.password,
       });
       const { data } = response;
-      activeUser ? navigate(routes.root) : null;
-      setUser(data);
+      console.log(data);
+      logIn(data);
+      navigate(routes.root);
     } catch (error) {
-      if (error.response) {
-        inputRef.current.select();
-        setErrors({
-          username: i18next.t('errors.serverError'),
-          password: i18next.t('errors.serverError'),
-        });
-        console.error(error.response.status);
-      } else if (error.request) {
-        console.error(error.request);
-      } else {
-        console.error('Error', error.message);
-      }
+      const { statusText } = error.response;
+      const message = statusText === 'Unauthorized' && 'login.validation.failed';
+      console.log(authError);
+      setAuthError(message);
     }
   };
 

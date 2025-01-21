@@ -1,20 +1,18 @@
 import i18next from 'i18next';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Formik, ErrorMessage } from 'formik';
 import { Container, Col, Card, Row } from 'react-bootstrap';
 import * as Yup from 'yup';
 import { Button, Form } from 'react-bootstrap';
-// import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/index.jsx';
 import signupImage from '../../assets/signup.jpg';
 import routes from '../../routes.js';
 import axios from 'axios';
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
   const inpRepeat = useRef(null);
+  const [signupError, setSignupError] = useState(null);
 
   const validationSchema = Yup.object().shape({
     username: Yup.string()
@@ -37,13 +35,13 @@ const SignupPage = () => {
         password: values.password,
       });
       const { data } = response;
-      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
       navigate(routes.loginPath);
-    } catch (err) {
-      if (err.response) {
-        console.error(err.response.status);
-        // toast.error(`Error: ${err.message}`)
-      }
+    } catch (error) {
+      const { status } = error.response;
+      const message = status === 409 && 'signup.validation.alreadyExists';
+      console.log(signupError)
+      setSignupError(message);
     }
   };
 

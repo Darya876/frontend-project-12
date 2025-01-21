@@ -6,30 +6,25 @@ const AuthProvider = ({ children }) => {
 
   const [activeUser, setActiveUser] = useState(name);
 
-  const setUser = (data) => {
+  const logIn = (data) => {
     const { username } = data;
     setActiveUser(username);
     localStorage.setItem('user', JSON.stringify(data));
   };
-
   const logOut = () => {
-    setActiveUser(null);
     localStorage.removeItem(activeUser);
+    setActiveUser(null);
+  };
+  const getAuthHeaders = () => ({
+    headers: { Authorization: `Bearer ${activeUser.token}` },
+  });
+
+  const authValue = {
+    activeUser, getAuthHeaders, logOut, logIn,
   };
 
-  const user = localStorage.length > 0 && JSON.parse(localStorage.getItem('user'));
-  const header = { Authorization: `Bearer ${user.token}` };
-
-  const value = {
-    activeUser,
-    user,
-    header,
-    logOut,
-    setUser,
-  }
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );

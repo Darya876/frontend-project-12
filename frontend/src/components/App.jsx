@@ -1,4 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.css';
 import MainContainer from './MainContainer.jsx';
 import { useContext } from 'react';
 import AuthContext from './contexts/AuthContext.jsx';
@@ -23,7 +22,6 @@ const App = () => {
         <NavBar />
         <BrowserRouter>
           <Routes>
-            {/* <Route path="/" element={(<ChatPage />)} /> */}
             <Route path={routes.root} element={(
               <ProtectedRoute>
                 <ChatPage />
@@ -35,7 +33,6 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </MainContainer>
-      {/* <div className="Toastify"></div> */}
     </>
   )
 }

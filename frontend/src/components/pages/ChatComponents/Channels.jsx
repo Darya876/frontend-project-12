@@ -1,49 +1,37 @@
 import { Button, ButtonGroup, Dropdown, Col } from 'react-bootstrap';
-import { useState } from 'react';
 import { PlusSquare } from 'react-bootstrap-icons';
 import { useSelector, useDispatch } from 'react-redux';
 // import { useTranslation } from 'react-i18next';
-import { setActiveChannel } from '../../../redux/channels.js'
-import { chooseModal } from '../../../redux/modals.js';
-import getModal from '../../modals/index.js'
-import filter from 'leo-profanity';
+import { setCurrentChannelId } from '../../../redux/channels.js'
 import cn from 'classnames';
+import { showModal } from '../../../redux/modals.js';
+import getModal from '../../modals/index.js';
+import filter from 'leo-profanity';
 
 const Channels = () => {
-  const [channelNumber, setChannelNumber] = useState(null);
   const dispatch = useDispatch();
-  // const { t } = useTranslation();
+  const currentChannelId = useSelector((state) => state.channels.activeChannel);
   const channels = useSelector((state) => state.channels.channels);
-  const activeChannel = useSelector((state) => state.channels.activeChannel);
-  const typeModal = useSelector((state) => state.modals.typeModal);
-
-  const btnClassLight = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-light');
-  const btnClassSecondary = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-secondary');
-  const dropDownClassLight = cn('square', 'border', 'border-0', 'btn-light');
-  const dropDownClassSecondary = cn('square', 'border', 'border-0', 'btn-secondary');
-
-  const manageChannel = (typeModal) => (e) => {
-    e.preventDefault();
-    dispatch(chooseModal(typeModal));
-    if (e.target.getAttribute('data-index')) {
-      setChannelNumber(e.target.getAttribute('data-index'));
-    }
+  const modalType = useSelector((state) => state.modals.modalType);
+  const changeChannel = (id) => {
+    dispatch(setCurrentChannelId(id));
   };
 
   const RenderModal = ({ value }) => {
     if (value) {
       const getModalValue = getModal(value);
       const params = {
-        channelNumber,
+        currentChannelId,
       };
       return getModalValue(params);
     }
     return null;
   };
 
-  const handleClick = (id) => {
-    dispatch(setActiveChannel(id));
-  };
+  const btnClassLight = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-light');
+  const btnClassSecondary = cn('w-100', 'rounded-0', 'text-start', 'text-truncate', 'btn', 'btn-secondary');
+  const dropDownClassLight = cn('square', 'border', 'border-0', 'btn-light');
+  const dropDownClassSecondary = cn('square', 'border', 'border-0', 'btn-secondary');
 
   return (
     <>
@@ -54,19 +42,19 @@ const Channels = () => {
             type="button"
             variant="light"
             className="p-0 text-primary btn btn-group-vertical"
-            onClick={manageChannel('adding')}
+            onClick={() => dispatch(showModal({ modalType: 'adding', channelId: null }))}
           >
             <PlusSquare size={20} />
             <span className="visually-hidden">+</span>
           </Button>
         </div>
         <ul
-          id="channels-box"
-          className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block"
+            id="channels-box"
+            className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block"
         >
           {channels.map(({ id, name, removable }) => { 
             const filteredName = filter.clean(name);
-            return (
+            return channels.removable ? (
               <li
                 className="nav-item w-100"
                 key={id}
@@ -75,9 +63,9 @@ const Channels = () => {
                 <ButtonGroup className="w-100 rounded-0 text-start">
                   <button
                     type="button"
-                    onClick={() => handleClick(id)}
+                    onClick={() => changeChannel(id)}
                     className={
-                      id === activeChannel
+                      id === currentChannelId
                         ? btnClassSecondary
                         : btnClassLight
                     }
@@ -89,7 +77,7 @@ const Channels = () => {
                     <Dropdown as={ButtonGroup}>
                       <Dropdown.Toggle
                         className={
-                          id === activeChannel
+                          id === currentChannelId
                             ? dropDownClassSecondary
                             : dropDownClassLight
                         }
@@ -102,7 +90,7 @@ const Channels = () => {
                           type="button"
                           href="#/action-1"
                           data-index={id}
-                          onClick={manageChannel('removing')}
+                          onClick={() => dispatch(showModal({ modalType: 'removing', channelId: id }))}
                         >
                           Удалить
                         </Dropdown.Item>
@@ -110,7 +98,7 @@ const Channels = () => {
                           type="button"
                           href="#/action-2"
                           data-index={id}
-                          onClick={manageChannel('renaming')}
+                          onClick={() => dispatch(showModal({ modalType: 'renaming', channelId: id }))}
                         >
                           Переименовать
                         </Dropdown.Item>
@@ -119,11 +107,28 @@ const Channels = () => {
                   ) : null}
                 </ButtonGroup>
               </li>
-            )
+            ) : (
+              <li
+                className="nav-item w-100"
+                key={id}
+                id={id}
+              >
+                <ButtonGroup className="w-100 rounded-0 text-start">
+                <button type="button" onClick={() => changeChannel(id)} className={
+                id === currentChannelId
+                ? btnClassSecondary
+                : btnClassLight}>
+                  #
+                  {' '}
+                  {filteredName}
+                </button>
+                </ButtonGroup>
+              </li>
+            );
           })}
         </ul>
       </Col>
-      {typeModal ? <RenderModal value={typeModal} /> : null}
+      { modalType ? <RenderModal value={modalType} /> : null }
     </>
   );
 };
